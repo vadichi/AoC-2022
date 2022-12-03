@@ -12,9 +12,7 @@ fun main() {
     do {
         val items = HashMap<Char, Int>()
 
-        // counts characters multiple times per line
-        // record
-        repeat(3) {
+        next_group@ for (i in 1..3) {
             val itemsFound = HashSet<Char>()
 
             for (char in line) {
@@ -30,7 +28,9 @@ fun main() {
                     itemsFound.add(char)
                 } else if (items[char] == 2) {
                     total += priorityCalculator.getPriority(char)
-                    itemsFound.add(char)
+
+                    line = reader.readLine()
+                    break@next_group
                 }
             }
 
