@@ -47,15 +47,15 @@ fun findLeastCommonBits(bitCounts: Array<Array<Int>>): Array<Char> {
 }
 
 fun bitsToDecimal(bits: Array<Char>): Int {
-    var denary = 0
+    var decimal = 0
     var coefficient = 1
 
     for (i in bits.size - 1 downTo 0) {
-        denary += Integer.parseInt(bits[i].toString()) * coefficient
+        decimal += Integer.parseInt(bits[i].toString()) * coefficient
         coefficient *= 2
     }
 
-    return denary
+    return decimal
 }
 
 fun main() {
