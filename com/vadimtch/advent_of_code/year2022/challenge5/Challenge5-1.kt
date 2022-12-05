@@ -3,77 +3,91 @@ package com.vadimtch.advent_of_code.year2022.challenge5
 import java.io.BufferedReader
 import java.io.File
 
-typealias ContainerState = Array<ArrayDeque<Char>>
+class Instruction(val count: Int, val origin: Int, val destination: Int)
 
-// Leaves the reader at the first line of instructions
-fun readInitialStateLines(reader: BufferedReader): ArrayList<String> {
-    val initialStateLines = ArrayList<String>()
-    var line = reader.readLine()
+open class ContainerShip(private val reader: BufferedReader) {
+    protected lateinit var state: Array<ArrayDeque<Char>>
 
-    do {
-        initialStateLines.add(line)
-        line = reader.readLine()
-    } while (line.isNotEmpty())
-
-    return initialStateLines
-}
-
-fun parseInitialState(initialStateLines: ArrayList<String>): ContainerState {
-    // The crate IDs in the input are located at positions 1, 5, 9, 13, ...
-    // These positions are modeled as 4k + 1 | for integer k >= 0
-
-    // Line with column numbers is the penultimate line
-    val size = initialStateLines[initialStateLines.size - 2].split(" ").size
-    val initialState = Array(size) { ArrayDeque<Char>()}
-
-    initialStateLines.asReversed().removeAt(0)
-
-    var position = 1
-    for (i in 0 until size) {
-        for (line in initialStateLines.asReversed()) {
-            val char = try {line[position]} catch (e: StringIndexOutOfBoundsException) { break }
-
-            if (char.isWhitespace()) {
-                break
-            }
-
-            initialState[i].addLast(char)
-        }
-
-        position += 4
+    init {
+        getInitialState()
+        executeInstructions()
     }
 
-    return initialState
-}
+    fun getTopLayer(): String {
+        val topLayer = CharArray(state.size)
+        for ((i, column) in state.withIndex()) {
+            topLayer[i] = column.removeLast()
+        }
 
-fun processInstruction(instruction: String, state: ContainerState) {
-    val tokens = instruction.split(" ")
+        return String(topLayer)
+    }
 
-    val repeats = Integer.parseInt(tokens[1])
-    val origin = Integer.parseInt(tokens[3]) - 1
-    val destination = Integer.parseInt(tokens[5]) - 1
+    protected open fun swap(instruction: Instruction) {
+        repeat(instruction.count) {
+            val element = state[instruction.origin].removeLast()
+            state[instruction.destination].addLast(element)
+        }
+    }
 
-    repeat(repeats) {
-        val element = state[origin].removeLast()
-        state[destination].addLast(element)
+    private fun getInitialState() {
+        val initialStateLines = ArrayList<String>()
+
+        var line = reader.readLine()
+        do {
+            initialStateLines.add(line)
+            line = reader.readLine()
+        } while(line.isNotEmpty())
+
+        val columnTitlesLine = initialStateLines[initialStateLines.size - 1]
+
+        val columnTitles = ArrayList(columnTitlesLine.split(" "))
+        columnTitles.removeIf { it.isBlank() }
+        val columnCount = columnTitles.size
+
+        initialStateLines.remove(columnTitlesLine)
+
+        state = Array(columnCount) { ArrayDeque() }
+
+        // Crate IDs are 4 characters apart starting from index 1
+        var lineIndex = 1
+        for (i in 0 until columnCount) {
+            for (initialStateLine in initialStateLines.asReversed()) {
+                // Index out of bounds => line ended
+                val char = try { initialStateLine[lineIndex] } catch (_: StringIndexOutOfBoundsException) { break }
+
+                if (char.isWhitespace()) {
+                    // End of column
+                    break
+                }
+
+                state[i].addLast(char)
+            }
+
+            lineIndex += 4
+        }
+    }
+
+    private fun executeInstructions() {
+        reader.forEachLine {line ->
+            val instruction = parseInstruction(line)
+            swap(instruction)
+        }
+    }
+
+    private fun parseInstruction(instruction: String): Instruction {
+        val tokens = instruction.split(" ")
+
+        val count = Integer.parseInt(tokens[1])
+        val origin = Integer.parseInt(tokens[3]) - 1
+        val destination = Integer.parseInt(tokens[5]) - 1
+
+        return Instruction(count, origin, destination)
     }
 }
 
 fun main() {
-    val file = File("com/vadimtch/advent_of_code/year2022/challenge5/Challenge5.txt")
-    val reader = file.bufferedReader()
+    val reader = File("com/vadimtch/advent_of_code/year2022/challenge5/Challenge5.txt").bufferedReader()
+    val containerShip = ContainerShip(reader)
 
-    val initialStateLines = readInitialStateLines(reader)
-    val containerState = parseInitialState(initialStateLines)
-
-    reader.forEachLine { line ->
-        processInstruction(line, containerState)
-    }
-
-    val answer = CharArray(containerState.size)
-    for ((i, column) in containerState.withIndex()) {
-        answer[i] = column.removeLast()
-    }
-
-    println(String(answer))
+    println(containerShip.getTopLayer())
 }
