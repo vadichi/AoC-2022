@@ -3,14 +3,7 @@ package com.vadimtch.advent_of_code.year2022.challenge8
 import java.io.File
 import kotlin.math.max
 
-enum class Direction {
-    Right,
-    Left,
-    Up,
-    Down
-}
-
-class Cell(
+class CellOld(
     var height: Int = 0,
     var treelineRight: Int = -1,
     var treelineLeft: Int = -1,
@@ -28,11 +21,11 @@ fun main() {
 
     val xSize = lines[0].length
     val ySize = lines.size
-    val map = Array(xSize) { Array(ySize) { Cell() } }
+    val map = Array(xSize) { Array(ySize) { CellOld() } }
 
     for (x in 0 until xSize) {
         for (y in 0 until ySize) {
-            map[x][y] = Cell(lines[y][x].digitToInt())
+            map[x][y] = CellOld(lines[y][x].digitToInt())
         }
     }
 
@@ -71,6 +64,8 @@ fun main() {
             map[x][y].treelineLeft = max(previousTreeline, previousHeight)
         }
     }
+
+
 
     var visible = 0
     map.forEach { yArray ->
