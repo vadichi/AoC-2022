@@ -54,17 +54,6 @@ class Race(
         return ((maximumHoldTime - minimumHoldTime) + BigDecimal.ONE).toBigInteger()
     }
 
-    private fun doesBeatRecord(holdTime: Double): Boolean {
-        return calculateDistance(holdTime) > record
-    }
-
-    private fun calculateDistance(holdTime: Double): Double {
-        val speed = 1 * holdTime
-        val moveTime = duration - holdTime
-
-        return speed * moveTime
-    }
-
 }
 
 fun loadRaces(): List<Race> {
