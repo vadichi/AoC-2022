@@ -1,20 +1,16 @@
 package com.vadimtch.advent_of_code.year2023.challenge6
 
 import java.io.File
+import java.math.BigDecimal
+import java.math.BigInteger
 import kotlin.math.*
 
 class Race(
-    private val record: Int,
-    private val duration: Int
+    private val record: Double,
+    private val duration: Double
 ) {
 
-    fun countSuccessfulHoldTimes(): Int {
-        val times = 0..duration
-
-        return times.count { doesBeatRecord(it) }
-    }
-
-    fun countSuccessfulHoldTimes2(): Int {
+    fun countSuccessfulHoldTimes(): BigInteger {
         /*
         * alternative maths-based solution
         *
@@ -33,7 +29,7 @@ class Race(
         * range = (root1, root2)
          */
 
-            val discriminant = duration.toDouble().pow(2) - 4 * record
+        val discriminant = duration.pow(2) - 4 * record
         val discriminantSqrt = sqrt(discriminant)
 
         val root1 = (duration - discriminantSqrt) / 2
@@ -42,27 +38,27 @@ class Race(
         // The closest integer to vertex strictly greater than root 1 [to the left of vertex]
         // Root 1 is to the left of vertex => root + 1, if integer; ceil otherwise
         val minimumHoldTime = if (root1 % 1 == 0.0) {
-            root1.toInt() + 1
+            root1.toBigDecimal() + BigDecimal.ONE
         } else {
-            ceil(root1).toInt()
+            ceil(root1).toBigDecimal()
         }
 
         // The closest integer to vertex strictly less than root 2
         // Root 2 is to the right of vertex => root - 1, if integer; floor otherwise
         val maximumHoldTime = if (root2 % 1 == 0.0) {
-            root2.toInt() - 1
+            root2.toBigDecimal() - BigDecimal.ONE
         } else {
-            floor(root2).toInt()
+            floor(root2).toBigDecimal()
         }
 
-        return ((maximumHoldTime - minimumHoldTime) + 1)
+        return ((maximumHoldTime - minimumHoldTime) + BigDecimal.ONE).toBigInteger()
     }
 
-    private fun doesBeatRecord(holdTime: Int): Boolean {
+    private fun doesBeatRecord(holdTime: Double): Boolean {
         return calculateDistance(holdTime) > record
     }
 
-    private fun calculateDistance(holdTime: Int): Int {
+    private fun calculateDistance(holdTime: Double): Double {
         val speed = 1 * holdTime
         val moveTime = duration - holdTime
 
@@ -81,7 +77,7 @@ fun loadRaces(): List<Race> {
         .map { it.trim() }
         .map { it.split(" ") }
         .map { it.filter { token -> token.isNotEmpty()} }
-        .map { it.map { token -> token.toInt() } }
+        .map { it.map { token -> token.toDouble() } }
         .toList()
 
     val races = mutableListOf<Race>()
@@ -99,8 +95,8 @@ fun main() {
     val races = loadRaces()
 
     val product = races
-        .map { it.countSuccessfulHoldTimes2() }
-        .reduce(Int::times)
+        .map { it.countSuccessfulHoldTimes() }
+        .reduce(BigInteger::times)
 
     println(product)
 }
