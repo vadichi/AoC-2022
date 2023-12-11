@@ -1,65 +1,63 @@
 package com.vadimtch.advent_of_code.year2023.challenge11
 
 import java.io.File
-import kotlin.math.abs
+import java.math.BigInteger
 
 data class Galaxy(
-    val x: Int,
-    val y: Int,
+    var x: BigInteger,
+    var y: BigInteger,
 ) {
-    fun manhattanDistance(other: Galaxy): Int {
-        return abs(x - other.x) + abs(y - other.y)
+    fun manhattanDistance(other: Galaxy): BigInteger {
+        return (x - other.x).abs() + (y - other.y).abs()
     }
 }
 
-class Image(mapLines: List<String>) {
-    private val map: MutableList<MutableList<Char>> = mutableListOf()
+class Image(
+    private val expansionFactor: BigInteger,
+
+    baseMapLines: List<String>,
+) {
+
+    private val baseMap: Array<CharArray>
     private val galaxies: MutableList<Galaxy> = mutableListOf()
 
     init {
-        mapLines.forEach {
-            map.add(it.toMutableList())
+        baseMap = Array(baseMapLines.size) { CharArray(baseMapLines[0].length) }
+        baseMapLines.forEachIndexed { y, line ->
+            baseMap[y] = line.toCharArray()
         }
 
-        expand()
-        scanGalaxies()
+        findGalaxies()
+        expandGalaxies()
     }
 
-    fun calculateDistanceSum(): Int {
-        val pairs = generateGalaxyPairs()
-
-        return pairs.sumOf { it.elementAt(0).manhattanDistance(it.elementAt(1)) }
-    }
-
-    private fun expand() {
-        var y = 0
-        while (y <= map.lastIndex) {
-            if (map[y].all { it == '.' }) {
-                map.add(y + 1, MutableList(map[0].size) { '.' })
-                y += 1
+    fun calculateDistanceSum(): BigInteger {
+        return generateGalaxyPairs()
+            .sumOf {
+                it.elementAt(0).manhattanDistance(it.elementAt(1))
             }
-
-            y += 1
-        }
-
-        var x = 0
-        while (x <= map[0].lastIndex) {
-            if (map.all { it[x] == '.' }) {
-                map.forEach { it.add(x + 1, '.') }
-                x += 1
-            }
-
-            x += 1
-        }
     }
 
-    private fun scanGalaxies() {
-        map.forEachIndexed { y, line ->
+    private fun findGalaxies() {
+        baseMap.forEachIndexed { y, line ->
             line.forEachIndexed { x, it ->
                 if (it == '#') {
-                    galaxies.add(Galaxy(x, y))
+                    galaxies.add(Galaxy(x.toBigInteger(), y.toBigInteger()))
                 }
             }
+        }
+    }
+
+    private fun expandGalaxies() {
+        val verticalBoundaries = findVerticalExpansionBoundaries()
+        val horizontalBoundaries = findHorizontalExpansionBoundaries()
+
+        galaxies.forEach {
+            val horizontalExpansions = horizontalBoundaries.count { x -> x.toBigInteger() < it.x }
+            val verticalExpansions = verticalBoundaries.count { y -> y.toBigInteger() < it.y }
+
+            it.x += horizontalExpansions.toBigInteger() * expansionFactor
+            it.y += verticalExpansions.toBigInteger() * expansionFactor
         }
     }
 
@@ -76,16 +74,40 @@ class Image(mapLines: List<String>) {
 
         return pairs
     }
+
+    private fun findVerticalExpansionBoundaries(): List<Int> {
+        val boundaries = mutableListOf<Int>()
+        baseMap.forEachIndexed { y, line ->
+            if (line.all { it == '.' }) {
+                boundaries.add(y)
+            }
+        }
+
+        return boundaries
+    }
+
+    private fun findHorizontalExpansionBoundaries(): List<Int> {
+        val boundaries = mutableListOf<Int>()
+        baseMap[0].forEachIndexed { x, _ ->
+            if (baseMap.all { it[x] == '.' }) {
+                boundaries.add(x)
+            }
+        }
+
+        return boundaries
+    }
+
 }
 
-fun parseInput(): Image {
+fun parseInput(): List<String> {
     val file = File("com/vadimtch/advent_of_code/year2023/challenge11/Challenge11.txt")
-    val lines = file.readLines()
 
-    return Image(lines)
+    return file.readLines()
 }
 
 fun main() {
-    val image = parseInput()
+    val lines = parseInput()
+    val image = Image(BigInteger.ONE, lines)
+
     println(image.calculateDistanceSum())
 }
