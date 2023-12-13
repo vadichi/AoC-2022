@@ -8,17 +8,15 @@ fun readLines(): List<String> {
 }
 
 fun findFirstDigit(line: String): Int {
-    val firstChar = line.find { char ->
-        char.isDigit()
-    } ?: throw IllegalArgumentException("No digits found")
+    val firstChar = line.find { char -> char.isDigit() }
+        ?: throw IllegalArgumentException("No digits found")
 
     return firstChar.digitToInt()
 }
 
 fun findLastDigit(line: String): Int {
-    val lastChar = line.findLast { char ->
-        char.isDigit()
-    } ?: throw IllegalArgumentException("No digits found")
+    val lastChar = line.findLast { char -> char.isDigit() }
+        ?: throw IllegalArgumentException("No digits found")
 
     return lastChar.digitToInt()
 }
@@ -32,7 +30,6 @@ fun calculateCalibrationNumber(line: String): Int {
 
 fun main() {
     val lines = readLines()
-
     val sum = lines.sumOf { line ->
         calculateCalibrationNumber(line)
     }
