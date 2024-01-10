@@ -1,2 +1,13 @@
+# Editor files
 .idea/
+.vscode/
+*.swp
+
+# Compiled code
 out/
+
+# Input data
+*.txt
+
+# System files
+.DS_Store
