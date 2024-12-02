@@ -12,24 +12,28 @@ fun readReports(): List<List<Int>> {
     }
 }
 
-fun isReportSafe(report: List<Int>): Boolean {
-    val direction = (report[1] - report[0]).sign
+fun isReportSafe(report: List<Int>): Pair<Boolean, Int> {
+    // A majority vote for the direction based on the first 3 pairs.
+    val direction = (0..2)
+        .map { i -> (report[i + 1] - report[i]).sign }
+        .groupBy { it }
+        .maxBy { it.value.size }
+        .key
 
     for (i in 0..<report.size - 1) {
         val delta = report[i + 1] - report[i]
 
-        var reject = false
-        if (direction != delta.sign) return false
-        if (delta.absoluteValue < 1) return false
-        if (delta.absoluteValue > 3) return false
+        if (direction != delta.sign) return Pair(false, i)
+        if (delta.absoluteValue < 1) return Pair(false, i)
+        if (delta.absoluteValue > 3) return Pair(false, i)
     }
 
-    return true
+    return Pair(true, 0)
 }
 
 fun main() {
     val reports = readReports()
-    val safeCount = reports.count { isReportSafe(it) }
+    val safeCount = reports.count { isReportSafe(it).first }
 
     println(safeCount)
 }
