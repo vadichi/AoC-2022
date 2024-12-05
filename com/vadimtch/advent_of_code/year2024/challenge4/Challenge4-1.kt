@@ -48,7 +48,6 @@ fun main() {
     for (y in matrix.indices) {
         var rowCounter = 0
 
-
         for (x in matrix[y].indices) {
             // Consider only possible words originating at the location.
             // Avoids double counting, as all the letters unique => each word has a single starting point.
