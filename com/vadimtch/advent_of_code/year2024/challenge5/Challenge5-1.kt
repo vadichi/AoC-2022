@@ -24,7 +24,7 @@ fun parseOrderRules(lines: List<String>): List<OrderRule> =
         OrderRule(parts[0], parts[1])
     }
 
-fun Update.indexed(): IndexedUpdate =
+fun Update.dependencyIndexed(): IndexedUpdate =
     this.mapIndexed { index, page -> page to index }.toMap()
 
 fun parseUpdates(lines: List<String>): List<Update> =
@@ -50,8 +50,12 @@ fun parseInput(): Pair<List<OrderRule>, List<Update>> {
 fun main() {
     val (rules, updates) = parseInput()
 
+    // When summing the middle page of each update at the end,
+    // it is useful to return to the original list representation.
+    // So, each indexed update is paired with the index of the corresponding original update in the list of those.
+
     // Assumes each page appears no more than once in any given update.
-    val indexedUpdates = updates.mapIndexed { index, update -> Pair(update.indexed(), index) }
+    val indexedUpdates = updates.mapIndexed { index, update -> Pair(update.dependencyIndexed(), index) }
 
     val validUpdateSum = indexedUpdates
         .filter { indexedUpdate -> rules.all { it.verify(indexedUpdate.first) } }
