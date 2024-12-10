@@ -2,12 +2,9 @@ package com.vadimtch.advent_of_code.year2024.challenge7
 
 import java.io.File
 
-enum class Operator(val apply: (Long, Long) -> Long) {
-    Add({ a, b -> a + b }),
-    Multiply({ a, b -> a * b }),
-}
+typealias Operator = ((Long, Long) -> Long)
 
-class Equation(descriptor: String) {
+class Equation(descriptor: String, private val operators: List<Operator>) {
     val result: Long
     private val operands: List<Long>
 
@@ -28,17 +25,12 @@ class Equation(descriptor: String) {
     }
 
     private fun checkBranch(accumulator: Long, i: Int): Boolean {
-        if (i == operands.lastIndex - 1) {
-            Operator.entries.forEach {
-                val result = it.apply(accumulator, operands[i + 1])
-                if (result == this.result) return true
-            }
-
-            return false
+        if (i == operands.lastIndex) {
+            return accumulator == result
         }
 
-        Operator.entries.forEach {
-            val result = it.apply(accumulator, operands[i + 1])
+        operators.forEach {
+            val result = it.invoke(accumulator, operands[i + 1])
 
             if (checkBranch(result, i + 1)) return true
         }
@@ -47,17 +39,27 @@ class Equation(descriptor: String) {
     }
 }
 
-fun parseEquations(): List<Equation> {
+fun parseEquations(operators: List<Operator>): List<Equation> {
     val file = File("com/vadimtch/advent_of_code/year2024/challenge7/Challenge7.txt")
 
     return file
         .readLines()
         .filter { it.isNotBlank() }
-        .map { Equation(it) }
+        .map {
+            Equation(
+                it,
+                operators
+            )
+        }
 }
 
 fun main() {
-    val equations = parseEquations()
+    val equations = parseEquations(
+        listOf(
+            { a, b -> a + b },
+            { a, b -> a * b }
+        )
+    )
 
     val sum = equations
         .filter { it.canCalibrate() }
