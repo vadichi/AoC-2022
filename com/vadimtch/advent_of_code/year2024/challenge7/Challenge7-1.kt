@@ -2,31 +2,9 @@ package com.vadimtch.advent_of_code.year2024.challenge7
 
 import java.io.File
 
-// To make it easier to iterate over all possible combinations of operands,
-// a list of operands can be described by a bit mask.
-// The i-th operator is represented by the i-th lowest bit of the mask,
-// where 0 corresponds to addition, and 1 corresponds to multiplication.
-class OperandList(private val mask: Int) {
-    fun evaluate(operands: List<Long>): Long {
-        var accumulator = operands[0]
-        for (i in 1 until  operands.size) {
-            accumulator = apply(accumulator, operands[i], i - 1)
-        }
-
-        return accumulator
-    }
-
-    private fun apply(left: Long, right: Long, operandOffset: Int): Long {
-        val result = when(operandAt(operandOffset)) {
-            0 -> left + right
-            1 -> left * right
-            else -> throw IllegalStateException()
-        }
-
-        return result
-    }
-
-    private fun operandAt(offset: Int) = (mask shr offset) and 1
+enum class Operator(val apply: (Long, Long) -> Long) {
+    Add({ a, b -> a + b }),
+    Multiply({ a, b -> a * b }),
 }
 
 class Equation(descriptor: String) {
@@ -45,12 +23,24 @@ class Equation(descriptor: String) {
     }
 
     fun canCalibrate(): Boolean {
-        var operandMask = 0
-        while(operandMask < (1 shl (operands.size - 1))) {
-            val operandList = OperandList(operandMask)
-            if (operandList.evaluate(operands) == result) return true
+        val accumulator = operands[0]
+        return checkBranch(accumulator, 0)
+    }
 
-            operandMask++
+    private fun checkBranch(accumulator: Long, i: Int): Boolean {
+        if (i == operands.lastIndex - 1) {
+            Operator.entries.forEach {
+                val result = it.apply(accumulator, operands[i + 1])
+                if (result == this.result) return true
+            }
+
+            return false
+        }
+
+        Operator.entries.forEach {
+            val result = it.apply(accumulator, operands[i + 1])
+
+            if (checkBranch(result, i + 1)) return true
         }
 
         return false
